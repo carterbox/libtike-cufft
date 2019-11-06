@@ -10,10 +10,17 @@ ptychofft::ptychofft(size_t ntheta, size_t nz, size_t n, size_t nscan,
   nprb(probe_size), probe_size(probe_size)
 {
 	// create batched 2d FFT plan on GPU with sizes (ndetx,ndety)
-	int ffts[2];
-	ffts[0] = ndetx;
-	ffts[1] = ndety;
-	cufftPlanMany(&plan2d, 2, ffts, ffts, 1, ndetx * ndety, ffts, 1, ndetx * ndety, CUFFT_C2C, ntheta * nscan);
+	int fft_det[2] = {(int)ndetx, (int)ndety};
+  int fft_prb[2] = {(int)nprb, (int)nprb};
+	cufftPlanMany(&plan2d, 2,
+    fft_det, // transform shape
+    fft_prb, // input shape
+    1, nprb * nprb,
+    fft_det, // output shape
+    1, ndetx * ndety,
+    CUFFT_C2C, // type
+    ntheta * nscan  // Number of FFTs to do simultaneously
+  );
 
 	// init 3d thread block on GPU
 	BS3d.x = 32;
@@ -55,8 +62,8 @@ void ptychofft::fwd(size_t g_, size_t f_, size_t scan_, size_t prb_)
   // convert pointers to correct type
   f = (float2 *)f_;
   g = (float2 *)g_;
-  scanx = &((float *)scan_)[0];
-  scany = &((float *)scan_)[ntheta * nscan];
+  float *scanx = &((float *)scan_)[0];
+  float *scany = &((float *)scan_)[ntheta * nscan];
   prb = (float2 *)prb_;
 
 	// probe multiplication of the object array
@@ -71,8 +78,8 @@ void ptychofft::adj(size_t g_, size_t f_, size_t scan_, size_t prb_, int flg)
   // convert pointers to correct type
   f = (float2 *)f_;
   g = (float2 *)g_;
-  scanx = &((float *)scan_)[0];
-  scany = &((float *)scan_)[ntheta * nscan];
+  float *scanx = &((float *)scan_)[0];
+  float *scany = &((float *)scan_)[ntheta * nscan];
   prb = (float2 *)prb_;
 
 	// inverse Fourier transform
