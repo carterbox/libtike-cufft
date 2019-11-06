@@ -2,12 +2,13 @@
 #include "kernels.cu"
 
 // constructor, memory allocation
-ptychofft::ptychofft(size_t ntheta, size_t nz, size_t n, size_t nscan,
-  size_t detector_size, size_t probe_size
+ptychofft::ptychofft(
+  size_t detector_shape, size_t probe_shape, size_t nscan, size_t nz, size_t n,
+  size_t ntheta
 ) :
   ntheta(ntheta), nz(nz), n(n), nscan(nscan),
-  ndetx(detector_size), ndety(detector_size),
-  nprb(probe_size), probe_size(probe_size)
+  ndetx(detector_shape), ndety(detector_shape),
+  nprb(probe_shape), probe_shape(probe_shape)
 {
 	// create batched 2d FFT plan on GPU with sizes (ndetx,ndety)
 	int fft_det[2] = {(int)ndetx, (int)ndety};

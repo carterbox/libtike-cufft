@@ -8,8 +8,8 @@ private:
   bool is_free = false;
 
   float2 *f;   // complex object. (ntheta, nz, n)
-  float2 *g;   // complex data. (ntheta, nscan, detector_size, detector_size)
-  float2 *prb; // complex probe function. (nethat, nsca, probe_size, probe_size)
+  float2 *g;   // complex data. (ntheta, nscan, detector_shape, detector_shape)
+  float2 *prb; // complex probe function. (nethat, nsca, probe_shape, probe_shape)
   float *scan; // vertical, horizonal scan positions. (ntheta, nscan, 2)
                // Negative scan positions are skipped in kernel executions.
 
@@ -27,12 +27,12 @@ public:
   size_t nz;            // object vertical size
   size_t n;             // object horizontal size
   size_t nscan;         // number of scan positions for 1 projection
-  size_t detector_size; // detector width and height
-  size_t probe_size;    // probe size in 1 dimension
+  size_t detector_shape; // detector width and height
+  size_t probe_shape;    // probe size in 1 dimension
 
   // constructor, memory allocation
   ptychofft(size_t ntheta, size_t nz, size_t n, size_t nscan,
-            size_t detector_size, size_t probe_size);
+            size_t detector_shape, size_t probe_shape);
   // destructor, memory deallocation
   ~ptychofft();
   // free memory early

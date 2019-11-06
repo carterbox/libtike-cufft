@@ -53,24 +53,6 @@ class PtychoCuFFT(ptychofft):
         simultaneously.
     """
 
-    def __init__(self, nscan, nprb, ndetx, ndety, ntheta, nz, n, ptheta, igpu):
-        """Please see help(PtychoCuFFT) for more info."""
-        cp.cuda.Device(igpu).use()  # gpu id to use
-        # set cupy to use unified memory
-        pool = cp.cuda.MemoryPool(cp.cuda.malloc_managed)
-        cp.cuda.set_allocator(pool.malloc)
-
-        super().__init__(ptheta, nz, n, nscan, ndetx, ndety, nprb)
-        self.ntheta = ntheta  # number of projections
-
-    def __enter__(self):
-        """Return self at start of a with-block."""
-        return self
-
-    def __exit__(self, type, value, traceback):
-        """Free GPU memory due at interruptions or with-block exit."""
-        self.free()
-
     def fwd_ptycho(self, psi, scan, prb):
         """Ptychography transform (FQ)."""
         assert psi.dtype == cp.complex64, f"{psi.dtype}"
@@ -98,7 +80,7 @@ class PtychoCuFFT(ptychofft):
             # compute part on GPU
             data_gpu = self.fwd_ptycho(psi_gpu, scan_gpu, prb_gpu)
             # copy to CPU
-            data[ids] = data_gpu.get()            
+            data[ids] = data_gpu.get()
         return data
 
     def adj_ptycho(self, data, scan, prb):
