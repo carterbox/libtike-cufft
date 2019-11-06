@@ -20,6 +20,8 @@ private:
   // 3d thread grids on GPU for different kernels
   dim3 GS3d0, GS3d1, GS3d2;
 
+  size_t ndetx, ndety, nprb;
+
 public:
   size_t ntheta;        // number of projections
   size_t nz;            // object vertical size
