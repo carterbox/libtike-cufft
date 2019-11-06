@@ -19,14 +19,14 @@ private:
   dim3 GS3d0, GS3d1, GS3d2;
   size_t ndetx, ndety, nprb;
 public:
-  %immutable
+  %immutable;
   size_t ntheta;        // number of projections
   size_t nz;            // object vertical size
   size_t n;             // object horizontal size
   size_t nscan;         // number of scan positions for 1 projection
   size_t detector_size; // detector width and height
   size_t probe_size;    // probe size in 1 dimension
-  %mutable
+  %mutable;
   ptychofft(size_t ntheta, size_t nz, size_t n, size_t nscan,
             size_t detector_size, size_t probe_size);
   ~ptychofft();
