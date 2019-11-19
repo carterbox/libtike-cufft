@@ -28,5 +28,8 @@ setup(
         'tike.PtychoBackend': [
             'cudafft = libtike.cufft.ptycho:PtychoCuFFT',
         ],
+        'tike.TomoBackend': [
+            'cudafft = libtike.cufft.tomo:TomoCuFFT',
+        ],
     },
 )

@@ -32,7 +32,7 @@ class TestTomoSolver(unittest.TestCase):
 
     def test_reconstruction(self):
         """Check Radon USFFT reconstruction."""
-        with pt.SolverTomo(self.theta, self.ntheta, self.nz, self.n, self.pnz,
+        with pt.TomoCuFFT(self.theta, self.ntheta, self.nz, self.n, self.pnz,
                            self.center) as slv:
             # generate data
             data = slv.fwd_tomo_batch(self.u0)
@@ -49,7 +49,7 @@ class TestTomoSolver(unittest.TestCase):
 
     def test_adjoint(self):
         """Check that the tomo operators meet adjoint definition."""
-        with pt.SolverTomo(self.theta, self.ntheta, self.nz, self.n, self.pnz,
+        with pt.TomoCuFFT(self.theta, self.ntheta, self.nz, self.n, self.pnz,
                            self.center) as slv:
             data = slv.fwd_tomo_batch(self.u0)
             u1 = slv.adj_tomo_batch(data)

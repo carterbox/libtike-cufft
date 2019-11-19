@@ -6,7 +6,7 @@ import numpy as np
 from libtike.cufft.radonusfft import radonusfft
 
 
-class SolverTomo(radonusfft):
+class TomoCuFFT(radonusfft):
     """Base class for tomography solvers using the USFFT method on GPU.
     This class is a context manager which provides the basic operators required
     to implement a tomography solver. It also manages memory automatically,
