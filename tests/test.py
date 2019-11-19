@@ -7,6 +7,9 @@ from scipy import ndimage
 
 import libtike.cufft as pt
 
+testdir = os.path.dirname(__file__)
+
+
 if __name__ == "__main__":
 
     if (len(sys.argv) < 2):
@@ -29,20 +32,20 @@ if __name__ == "__main__":
 
     # read probe
     prb0 = np.zeros([ntheta, nprb, nprb], dtype='complex64')
-    prbamp = dxchange.read_tiff('model/prbamp.tiff').astype('float32')
-    prbang = dxchange.read_tiff('model/prbang.tiff').astype('float32')
+    prbamp = dxchange.read_tiff('data/prbamp.tiff').astype('float32')
+    prbang = dxchange.read_tiff('data/prbang.tiff').astype('float32')
     prb0[0] = prbamp*np.exp(1j*prbang)
 
     # read scan positions
     scan = np.ones([ntheta, nscan, 2], dtype='float32')
-    temp = np.moveaxis(np.load('model/coords.npy'), 0, 1)[:nscan]
+    temp = np.moveaxis(np.load('data/coords.npy'), 0, 1)[:nscan]
     scan[0, :, 0] = temp[:, 1]
     scan[0, :, 1] = temp[:, 0]
 
     # read object
     psi0 = np.ones([ntheta, nz, n], dtype='complex64')
-    psiamp = dxchange.read_tiff('model/initpsiamp.tiff').astype('float32')
-    psiang = dxchange.read_tiff('model/initpsiang.tiff').astype('float32')
+    psiamp = dxchange.read_tiff('data/initpsiamp.tiff').astype('float32')
+    psiang = dxchange.read_tiff('data/initpsiang.tiff').astype('float32')
     psi0[0] = psiamp*np.exp(1j*psiang)
 
     # Class gpu solver
