@@ -15,3 +15,11 @@ target_link_libraries(ptychofft PRIVATE libptychofft)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ptychofft.py" DESTINATION "libtike/cufft")
 install(TARGETS ptychofft LIBRARY DESTINATION "libtike/cufft")
+
+# Must tell CMake that SWIG interface files are CXX files
+set_source_files_properties(radonusfft.i PROPERTIES CPLUSPLUS ON)
+swig_add_library(radonusfft LANGUAGE python SOURCES radonusfft.i)
+target_link_libraries(radonusfft PRIVATE libradonusfft)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/radonusfft.py" DESTINATION "libtike/cufft")
+install(TARGETS radonusfft LIBRARY DESTINATION "libtike/cufft")

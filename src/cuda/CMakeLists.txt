@@ -6,6 +6,7 @@ enable_language(CUDA)
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
 add_subdirectory(ptycho)
+add_subdirectory(tomo)
 
 # Compile a wrapper using the desired method
 if(${EXTENSION_WRAPPER} STREQUAL swig)
