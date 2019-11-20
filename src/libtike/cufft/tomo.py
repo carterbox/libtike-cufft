@@ -32,14 +32,14 @@ class TomoCuFFT(radonusfft):
         """Free GPU memory due at interruptions or with-block exit."""
         self.free()
 
-    def fwd_tomo(self, u):
+    def fwd(self, u):
         """Radon transform (R)"""
         res = cp.zeros([self.ntheta, self.nz, self.n], dtype='complex64')
         # C++ wrapper, send pointers to GPU arrays
         self.fwd(res.data.ptr, u.data.ptr)
         return res
 
-    def adj_tomo(self, data):
+    def adj(self, data):
         """Adjoint Radon transform (R^*)"""
         res = cp.zeros([self.nz, self.n, self.n], dtype='complex64')
         # C++ wrapper, send pointers to GPU arrays
@@ -61,7 +61,7 @@ class TomoCuFFT(radonusfft):
             # copy data part to gpu
             u_gpu = cp.array(u[ids])
             # Radon transform
-            res_gpu = self.fwd_tomo(u_gpu)
+            res_gpu = self.fwd(u_gpu)
             # copy result to cpu
             res[:, ids] = res_gpu.get()
         return res
@@ -76,7 +76,7 @@ class TomoCuFFT(radonusfft):
             data_gpu = cp.array(data[:, ids])
 
             # Adjoint Radon transform
-            res_gpu = self.adj_tomo(data_gpu)
+            res_gpu = self.adj(data_gpu)
             # copy result to cpu
             res[ids] = res_gpu.get()
         return res
@@ -91,8 +91,8 @@ class TomoCuFFT(radonusfft):
             return f
 
         for i in range(titer):
-            Ru = self.fwd_tomo(u)
-            grad = self.adj_tomo(Ru-xi0) / \
+            Ru = self.fwd(u)
+            grad = self.adj(Ru-xi0) / \
                 (self.ntheta * self.n/2)
             if i == 0:
                 d = -grad
@@ -100,7 +100,7 @@ class TomoCuFFT(radonusfft):
                 d = -grad+cp.linalg.norm(grad)**2 / \
                     (cp.sum(cp.conj(d)*(grad-grad0))+1e-32)*d
             # line search
-            Rd = self.fwd_tomo(d)
+            Rd = self.fwd(d)
             gamma = 0.5 * self.line_search(minf, 1, Ru, Rd)
             grad0 = grad
             # update step
