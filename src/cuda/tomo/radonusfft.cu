@@ -20,11 +20,14 @@ radonusfft::radonusfft(size_t ntheta, size_t pnz, size_t n, float center,
   cudaMemcpy(theta, (float *)theta_, ntheta * sizeof(float), cudaMemcpyDefault);
 
   // Plan 2D FFTs
-  int ffts[2] = {2 * n, 2 * n};
+  int ffts[2] = {static_cast<int>(2 * n),
+                 static_cast<int>(2 * n)};
   int idist = 2 * n * 2 * n;
   int odist = (2 * n + 2 * m) * (2 * n + 2 * m);
-  int inembed[2] = {2 * n, 2 * n};
-  int onembed[2] = {2 * n + 2 * m, 2 * n + 2 * m};
+  int inembed[2] = {static_cast<int>(2 * n),
+                    static_cast<int>(2 * n)};
+  int onembed[2] = {static_cast<int>(2 * n + 2 * m),
+                    static_cast<int>(2 * n + 2 * m)};
   cufftPlanMany(&plan2dfwd, 2, ffts, inembed, 1, idist, onembed, 1, odist,
                 CUFFT_C2C, pnz);
   cufftPlanMany(&plan2dadj, 2, ffts, onembed, 1, odist, inembed, 1, idist,
