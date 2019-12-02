@@ -40,9 +40,9 @@ class radonusfft {
 public:
   size_t n;      // width of square slices
   size_t ntheta; // number of angles
-  size_t pnz;    // number of slices
+  size_t nz;    // number of slices
   float center;  // location of the rotation center
-  radonusfft(size_t ntheta, size_t pnz, size_t n, float center, size_t theta_);
+  radonusfft(size_t ntheta, size_t nz, size_t n, float center, size_t theta_);
   ~radonusfft();
   void fwd(size_t g, size_t f);
   void adj(size_t f, size_t g);

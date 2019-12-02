@@ -68,7 +68,7 @@ class TomoCuFFT(radonusfft):
 
     def adj_tomo_batch(self, data):
         """Batch of adjoint Tomography transform (R*)"""
-        bnz = u.shape[1]
+        bnz = data.shape[1]
         res = np.zeros([bnz, self.n, self.n], dtype='complex64')
         for k in range(0, bnz // self.nz):
             ids = np.arange(k * self.nz, (k + 1) * self.nz)
@@ -114,7 +114,7 @@ class TomoCuFFT(radonusfft):
     def cg_tomo_batch(self, xi0, init, titer):
         """CG solver for rho||Ru-xi0||_2 by z-slice partitions"""
         u = init.copy()
-
+        bnz = u.shape[0]
         for k in range(0, bnz // self.nz):
             ids = np.arange(k * self.nz, (k + 1) * self.nz)
             u_gpu = cp.array(u[ids])
