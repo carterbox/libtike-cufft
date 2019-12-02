@@ -8,7 +8,7 @@
 void __global__ muloperator(float2 *f, float2 *g, float2 *prb,
   const float2 * const scan,
   const int Ntheta, const int Nz, const int N, const int Nscan, const int Nprb,
-  const int ndet, int flg)
+  const int detector_shape, int flg)
 {
   const int tx = blockDim.x * blockIdx.x + threadIdx.x;
   const int ty = blockDim.y * blockIdx.y + threadIdx.y;
@@ -37,12 +37,12 @@ void __global__ muloperator(float2 *f, float2 *g, float2 *prb,
   int g_index = (
       // shift probe multiplication to min corner of nearplane array so that
       // FFTS are correct when probe and farplane sizes mismatch
-      + (ndet - Nprb) / 2 * (ndet + 1)
+      + (detector_shape - Nprb) / 2 * (detector_shape + 1)
       // shift in the nearplane array multiplication for this thread
       + ix
-      + iy * ndet
-      + ty * ndet * ndet
-      + tz * ndet * ndet * Nscan
+      + iy * detector_shape
+      + ty * detector_shape * detector_shape
+      + tz * detector_shape * detector_shape * Nscan
     );
   // coordinates in the probe array
   int prb_index = (
@@ -51,7 +51,7 @@ void __global__ muloperator(float2 *f, float2 *g, float2 *prb,
       + tz * Nprb * Nprb
     );
 
-  const float c = 1.0 / static_cast<float>(ndet); // fft constant
+  const float c = 1.0 / static_cast<float>(detector_shape); // fft constant
   float2 tmp; //tmp variable
 
   // Linear interpolation

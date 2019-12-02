@@ -16,12 +16,12 @@ if __name__ == "__main__":
     nz = 276  # vertical size
     ntheta = 1  # number of projections
     nscan = 100  # number of scan positions [max 5706 for the data example]
-    nprb = 128  # probe size
-    ndet = 128  # detector x size
-    ptheta = 1  # number of angular partitions for simultaneous processing in ptychography
+    probe_shape = 128  # probe size
+    detector_shape = 128  # detector x size
+    ntheta = 1  # number of angular partitions for simultaneous processing in ptychography
 
     # read probe
-    prb0 = np.zeros([ntheta, nprb, nprb], dtype='complex64')
+    prb0 = np.zeros([ntheta, probe_shape, probe_shape], dtype='complex64')
     prbamp = dxchange.read_tiff('data/prbamp.tiff').astype('float32')
     prbang = dxchange.read_tiff('data/prbang.tiff').astype('float32')
     prb0[0] = prbamp*np.exp(1j*prbang)
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     psi0[0] = psiamp*np.exp(1j*psiang)
 
     # Class gpu solver
-    with pt.PtychoCuFFT(nscan, nprb, ndet, ptheta, nz, n) as slv:
+    with pt.PtychoCuFFT(nscan, probe_shape, detector_shape, ntheta, nz, n) as slv:
         # Compute forward operator FQpsi
         t1 = slv.fwd_ptycho_batch(psi0, scan, prb0)
         t2 = slv.adj_ptycho_batch(t1, scan, prb0)

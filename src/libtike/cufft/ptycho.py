@@ -42,15 +42,15 @@ class PtychoCuFFT(ptychofft):
     ----------
     nscan : int
         The number of scan positions at each angular view.
-    nprb : int
+    probe_shape : int
         The pixel width and height of the probe illumination.
-    ndet, ndet : int
+    detector_shape, detector_shape : int
         The pixel width and height of the detector.
-    ptheta : int
+    ntheta : int
         The number of angular partitions of the data.
     n, nz : int
         The pixel width and height of the reconstructed grid.
-    ptheta : int
+    ntheta : int
         The number of angular partitions to process together
         simultaneously.
     """
@@ -74,7 +74,7 @@ class PtychoCuFFT(ptychofft):
     def _batch(self, function, output, *inputs):
         """Does data shuffle between host and device."""
         xp = self.array_module
-        # TODO: handle the case when ptheta does not divide ntheta evenly
+        # TODO: handle the case when ntheta does not divide ntheta evenly
         for ids in range(0, inputs[0].shape[0]):
             inputs_gpu = [xp.array(x[ids:ids+1]) for x in inputs]
             output[ids] = function(*inputs_gpu).get()
@@ -85,14 +85,14 @@ class PtychoCuFFT(ptychofft):
         assert psi.dtype == cp.complex64, f"{psi.dtype}"
         assert scan.dtype == cp.float32, f"{scan.dtype}"
         assert probe.dtype == cp.complex64, f"{probe.dtype}"
-        farplane = cp.zeros([self.ptheta, self.nscan, self.ndet, self.ndet],
+        farplane = cp.zeros([self.ntheta, self.nscan, self.detector_shape, self.detector_shape],
                        dtype='complex64')
         ptychofft.fwd(self, farplane.data.ptr, psi.data.ptr, scan.data.ptr, probe.data.ptr)
         return farplane
 
     def fwd_ptycho_batch(self, psi, scan, probe):
         """Batch of Ptychography transform (FQ)."""
-        data = np.zeros([scan.shape[0], self.nscan, self.ndet, self.ndet],
+        data = np.zeros([scan.shape[0], self.nscan, self.detector_shape, self.detector_shape],
                         dtype='complex64')
         return self._batch(self.fwd, data, psi, scan, probe)
 
@@ -101,7 +101,7 @@ class PtychoCuFFT(ptychofft):
         assert farplane.dtype == cp.complex64, f"{farplane.dtype}"
         assert scan.dtype == cp.float32, f"{scan.dtype}"
         assert probe.dtype == cp.complex64, f"{probe.dtype}"
-        psi = cp.zeros([self.ptheta, self.nz, self.n], dtype='complex64')
+        psi = cp.zeros([self.ntheta, self.nz, self.n], dtype='complex64')
         flg = 0  # compute adjoint operator with respect to object
         ptychofft.adj(self, psi.data.ptr, farplane.data.ptr, scan.data.ptr, probe.data.ptr, flg)
         return psi
@@ -116,14 +116,14 @@ class PtychoCuFFT(ptychofft):
         assert farplane.dtype == cp.complex64, f"{farplane.dtype}"
         assert scan.dtype == cp.float32, f"{scan.dtype}"
         assert psi.dtype == cp.complex64, f"{psi.dtype}"
-        probe = cp.zeros([self.ptheta, self.nprb, self.nprb], dtype='complex64')
+        probe = cp.zeros([self.ntheta, self.probe_shape, self.probe_shape], dtype='complex64')
         flg = 1  # compute adjoint operator with respect to probe
         ptychofft.adj(self, psi.data.ptr, farplane.data.ptr, scan.data.ptr, probe.data.ptr, flg)
         return probe
 
     def adj_ptycho_batch_prb(self, farplane, scan, psi):
         """Batch of Ptychography transform (FQ)."""
-        probe = np.zeros([scan.shape[0], self.nprb, self.nprb], dtype='complex64')
+        probe = np.zeros([scan.shape[0], self.probe_shape, self.probe_shape], dtype='complex64')
         return self._batch(self.adj_probe, probe, farplane, scan, psi)
 
     def run(self, data, psi, scan, probe, **kwargs):
@@ -138,8 +138,8 @@ class PtychoCuFFT(ptychofft):
         probe = probe.copy()
 
         # angle partitions in ptychography
-        for k in range(0, scan.shape[0] // self.ptheta):
-            ids = np.arange(k * self.ptheta, (k + 1) * self.ptheta)
+        for k in range(0, scan.shape[0] // self.ntheta):
+            ids = np.arange(k * self.ntheta, (k + 1) * self.ntheta)
             # copy to GPU
             psi_gpu = cp.array(psi[ids])
             scan_gpu = cp.array(scan[ids])

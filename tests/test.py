@@ -22,16 +22,16 @@ if __name__ == "__main__":
     nz = 276  # vertical size
     ntheta = 1  # number of projections
     nscan = 1000  # number of scan positions [max 5706 for the data example]
-    nprb = 128  # probe size
-    ndet = 128  # detector x size
+    probe_shape = 128  # probe size
+    detector_shape = 128  # detector x size
     recover_prb = True  # True: recover probe, False: use the initial one
     # Reconstrucion parameters
     model = 'gaussian'  # minimization funcitonal (poisson,gaussian)
     piter = 128  # ptychography iterations
-    ptheta = 1  # number of angular partitions for simultaneous processing in ptychography
+    ntheta = 1  # number of angular partitions for simultaneous processing in ptychography
 
     # read probe
-    prb0 = np.zeros([ntheta, nprb, nprb], dtype='complex64')
+    prb0 = np.zeros([ntheta, probe_shape, probe_shape], dtype='complex64')
     prbamp = dxchange.read_tiff('data/prbamp.tiff').astype('float32')
     prbang = dxchange.read_tiff('data/prbang.tiff').astype('float32')
     prb0[0] = prbamp*np.exp(1j*prbang)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     psi0[0] = psiamp*np.exp(1j*psiang)
 
     # Class gpu solver
-    with pt.CGPtychoSolver(nscan, nprb, ndet, ptheta, nz, n) as slv:
+    with pt.CGPtychoSolver(nscan, probe_shape, detector_shape, ntheta, nz, n) as slv:
         # Compute intensity data on the detector |FQ|**2
         data = np.abs(slv.fwd_ptycho_batch(psi0, scan, prb0))**2
         dxchange.write_tiff(data, 'data', overwrite=True)
