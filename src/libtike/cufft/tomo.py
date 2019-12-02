@@ -36,14 +36,14 @@ class TomoCuFFT(radonusfft):
         """Radon transform (R)"""
         res = cp.zeros([self.ntheta, self.nz, self.n], dtype='complex64')
         # C++ wrapper, send pointers to GPU arrays
-        self.fwd(res.data.ptr, u.data.ptr)
+        radonusfft.fwd(self, res.data.ptr, u.data.ptr)
         return res
 
     def adj(self, data):
         """Adjoint Radon transform (R^*)"""
         res = cp.zeros([self.nz, self.n, self.n], dtype='complex64')
         # C++ wrapper, send pointers to GPU arrays
-        self.adj(res.data.ptr, data.data.ptr)
+        radonusfft.adj(self, res.data.ptr, data.data.ptr)
         return res
 
     def line_search(self, minf, gamma, Ru, Rd):
