@@ -19,6 +19,10 @@ class TomoCuFFT(radonusfft):
     n, nz : int
         The pixel width and height of the projection.
     """
+
+    array_module = cp
+    asnumpy = cp.asnumpy
+
     def __init__(self, angles, ntheta, nz, n, center):
         """Please see help(SolverTomo) for more info."""
         # create class for the tomo transform associated with first gpu
