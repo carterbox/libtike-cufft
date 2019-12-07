@@ -1,4 +1,4 @@
-"""Module for tomography."""
+"""Module for tomography operators utilizing the cuFFT library."""
 
 import cupy as cp
 import numpy as np
@@ -8,16 +8,19 @@ from libtike.cufft.radonusfft import radonusfft
 
 class TomoCuFFT(radonusfft):
     """Base class for tomography solvers using the USFFT method on GPU.
+
     This class is a context manager which provides the basic operators required
     to implement a tomography solver. It also manages memory automatically,
     and provides correct cleanup for interruptions or terminations.
 
-    Attribtues
+    Attributes
     ----------
     ntheta : int
         The number of projections.
     n, nz : int
         The pixel width and height of the projection.
+    center : float
+        The location of the rotation center for all slices.
     """
 
     array_module = cp

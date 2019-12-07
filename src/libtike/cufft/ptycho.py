@@ -1,4 +1,4 @@
-"""A module for ptychography solvers.
+"""A module for ptychography solvers utilizing the cuFFT library.
 
 This module implements ptychographic solvers which all inherit from a
 ptychography base class. The base class implements the forward and adjoint
