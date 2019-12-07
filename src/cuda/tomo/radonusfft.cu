@@ -2,8 +2,7 @@
 #include "kernels.cu"
 #include "shift.cu"
 
-radonusfft::radonusfft(size_t ntheta, size_t nz, size_t n, float center,
-                       size_t theta_)
+radonusfft::radonusfft(size_t ntheta, size_t nz, size_t n, float center)
     : ntheta(ntheta), nz(nz), n(n), center(center) {
   float eps = 1e-3;
   mu = -log(eps) / (2 * n * n);
@@ -16,8 +15,6 @@ radonusfft::radonusfft(size_t ntheta, size_t nz, size_t n, float center,
 
   cudaMalloc((void **)&x, n * ntheta * sizeof(float));
   cudaMalloc((void **)&y, n * ntheta * sizeof(float));
-  cudaMalloc((void **)&theta, ntheta * sizeof(float));
-  cudaMemcpy(theta, (float *)theta_, ntheta * sizeof(float), cudaMemcpyDefault);
 
   // Plan 2D FFTs
   int ffts[2] = {static_cast<int>(2 * n),
@@ -81,13 +78,13 @@ void radonusfft::free() {
   }
 }
 
-void radonusfft::fwd(size_t g_, size_t f_) {
+void radonusfft::fwd(size_t g_, size_t f_, size_t theta) {
   cudaMemcpy(f, (float2 *)f_, n * n * nz * sizeof(float2), cudaMemcpyDefault);
   cudaMemset(fde, 0, 2 * n * 2 * n * nz * sizeof(float2));
   cudaMemset(fdee, 0, (2 * n + 2 * m) * (2 * n + 2 * m) * nz * sizeof(float2));
 
   circ <<<GS3d0, BS3d>>> (f, 1.0f / n, n, nz);
-  takexy <<<GS2d0, BS2d>>> (x, y, theta, n, ntheta);
+  takexy <<<GS2d0, BS2d>>> (x, y, (float *)theta, n, ntheta);
 
   divphi <<<GS3d0, BS3d>>> (fde, f, mu, n, nz, TOMO_FWD);
   fftshiftc <<<GS3d1, BS3d>>> (fde, 2 * n, nz);
@@ -108,13 +105,13 @@ void radonusfft::fwd(size_t g_, size_t f_) {
              cudaMemcpyDefault);
 }
 
-void radonusfft::adj(size_t f_, size_t g_) {
+void radonusfft::adj(size_t f_, size_t g_, size_t theta) {
   cudaMemcpy(g, (float2 *)g_, n * ntheta * nz * sizeof(float2),
              cudaMemcpyDefault);
   cudaMemset(fde, 0, (2 * n + 2 * m) * (2 * n + 2 * m) * nz * sizeof(float2));
   cudaMemset(fdee, 0, (2 * n + 2 * m) * (2 * n + 2 * m) * nz * sizeof(float2));
 
-  takexy <<<GS2d0, BS2d>>> (x, y, theta, n, ntheta);
+  takexy <<<GS2d0, BS2d>>> (x, y, (float *)theta, n, ntheta);
 
   ifftshiftc <<<GS3d3, BS3d>>> (g, n, ntheta, nz);
   cufftExecC2C(plan1d, (cufftComplex *)g, (cufftComplex *)g, CUFFT_FORWARD);

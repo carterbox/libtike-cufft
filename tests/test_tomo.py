@@ -30,27 +30,9 @@ class TestTomoSolver(unittest.TestCase):
             os.path.join(testdir, 'data', 'delta-chip-128.tiff'))
         self.u0 = delta + 1j * beta
 
-    def test_reconstruction(self):
-        """Check Radon USFFT reconstruction."""
-        with pt.TomoCuFFT(self.theta, self.ntheta, self.pnz, self.n,
-                           self.center) as slv:
-            # generate data
-            data = slv.fwd_tomo_batch(self.u0)
-            # initial guess
-            u = np.zeros([self.nz, self.n, self.n], dtype='complex64')
-            u = slv.cg_tomo_batch(data, u, 64)
-            # save results
-            dxchange.write_tiff(u.imag,
-                                os.path.join(testdir, 'rec', 'beta'),
-                                overwrite=True)
-            dxchange.write_tiff(u.real,
-                                os.path.join(testdir, 'rec', 'delta'),
-                                overwrite=True)
-
     def test_adjoint(self):
         """Check that the tomo operators meet adjoint definition."""
-        with pt.TomoCuFFT(self.theta, self.ntheta, self.pnz, self.n,
-                           self.center) as slv:
+        with pt.TomoCuFFT(self.ntheta, self.pnz, self.n, self.center) as slv:
             data = slv.fwd_tomo_batch(self.u0)
             u1 = slv.adj_tomo_batch(data)
             t1 = np.sum(data * np.conj(data))

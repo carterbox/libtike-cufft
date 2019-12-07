@@ -16,9 +16,9 @@ public:
   float center;
 
   %mutable;
-  radonusfft(size_t ntheta, size_t nz, size_t n, float center, size_t theta);
+  radonusfft(size_t ntheta, size_t nz, size_t n, float center);
   ~radonusfft();
-  void fwd(size_t g, size_t f);
-  void adj(size_t f, size_t g);
+  void fwd(size_t g, size_t f, size_t theta);
+  void adj(size_t f, size_t g, size_t theta);
   void free();
 };

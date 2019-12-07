@@ -20,7 +20,6 @@ class radonusfft {
   float2 *gg;
   float2 *f0;
   float2 *g0;
-  float *theta;
 
   float *x;
   float *y;
@@ -42,10 +41,10 @@ public:
   size_t ntheta; // number of angles
   size_t nz;    // number of slices
   float center;  // location of the rotation center
-  radonusfft(size_t ntheta, size_t nz, size_t n, float center, size_t theta_);
+  radonusfft(size_t ntheta, size_t nz, size_t n, float center);
   ~radonusfft();
-  void fwd(size_t g, size_t f);
-  void adj(size_t f, size_t g);
+  void fwd(size_t g, size_t f, size_t theta);
+  void adj(size_t f, size_t g, size_t theta);
   void free();
 };
 
