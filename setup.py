@@ -20,7 +20,7 @@ from setuptools import find_namespace_packages
 setup(
     name='libtike-cufft',
     author='Viktor Nikitin',
-    version='0.4.0',
+    version='0.5.0',
     package_dir={'': 'src'},
     packages=find_namespace_packages(where='src', include=['libtike.*']),
     zip_safe=False,
