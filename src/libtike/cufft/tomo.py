@@ -1,7 +1,14 @@
-"""Module for tomography operators utilizing the cuFFT library."""
+"""Module for tomography operators utilizing the cuFFT library.
+
+This module provides the forward and adjoint tomography operators as Python
+context managers. This means that instances should be instantiated using a
+with-block. The context managers construct was chosen because context managers
+are capable of gracefully handling interruptions (CTRL + C) by running their
+__exit__ method.
+
+"""
 
 import cupy as cp
-import numpy as np
 
 from libtike.cufft.radonusfft import radonusfft
 
@@ -42,13 +49,21 @@ class TomoCuFFT(radonusfft):
     def fwd(self, obj, theta):
         """Radon transform (R)"""
         res = cp.zeros([self.ntheta, self.nz, self.n], dtype='complex64')
-        # C++ wrapper, send pointers to GPU arrays
-        radonusfft.fwd(self, res.data.ptr, obj.data.ptr, theta.data.ptr)
+        radonusfft.fwd(
+            self,
+            res.data.ptr,
+            cp.asarray(obj, dtype='complex64').data.ptr,
+            cp.asarray(theta, dtype='float32').data.ptr,
+        )
         return res
 
     def adj(self, data, theta):
         """Adjoint Radon transform (R^*)"""
         res = cp.zeros([self.nz, self.n, self.n], dtype='complex64')
-        # C++ wrapper, send pointers to GPU arrays
-        radonusfft.adj(self, res.data.ptr, data.data.ptr, theta.data.ptr)
+        radonusfft.adj(
+            self,
+            res.data.ptr,
+            cp.asarray(data, dtype='complex64').data.ptr,
+            cp.asarray(theta, dtype='float32').data.ptr,
+        )
         return res
