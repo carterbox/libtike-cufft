@@ -32,4 +32,11 @@ setup(
             'cudafft = libtike.cufft.tomo:TomoCuFFT',
         ],
     },
+    setup_requires=[
+        'scikit-build',
+        'setuptools',
+    ],
+    install_requires=[
+        'cupy',
+    ],
 )
