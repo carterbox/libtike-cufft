@@ -1,6 +1,9 @@
-# Must set CUDA host compiler before enabling CUDA else it will use whatever it
-# finds first. Alternatively, set the environment variable CUDAHOSTCXX
-set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+# Want to set CUDA host compiler before enabling CUDA else it will use whatever
+# it finds first; However, this would mess with the nvcc compiler wrapping
+# script on conda-forge feedstocks. Therefore, set the environment variable
+# CUDAHOSTCXX instead.
+
+# set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
 enable_language(CUDA)
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
