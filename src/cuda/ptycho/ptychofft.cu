@@ -132,3 +132,30 @@ void Propagation::adj(size_t f, size_t g) {
   fft_pad<<<GS3d0, BS3d>>>((float2 *)f, fft_buffer, fft_norm,
                            false, nwaves, probe_shape, detector_shape);
 }
+
+
+Convolution::Convolution(size_t probe_shape, size_t nscan, size_t nz, size_t n, size_t ntheta) :
+  ntheta(ntheta), nz(nz), n(n), nscan(nscan), probe_shape(probe_shape)
+{
+  // Set CUDA kernel block size
+  BS3d.x = probe_shape * probe_shape;
+  BS3d.y = 1;
+  BS3d.z = 1;
+
+  // Set CUDA kernel grid size
+  GS3d0.x = nscan;
+  GS3d0.y = ntheta;
+  GS3d0.z = 1;
+}
+
+Convolution::~Convolution(){
+
+}
+
+void Convolution::fwd(size_t nearplane, size_t obj, size_t scan){
+
+}
+
+void Convolution::adj(size_t nearplane, size_t obj, size_t scan){
+
+}

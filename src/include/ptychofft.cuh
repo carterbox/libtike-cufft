@@ -68,4 +68,24 @@ public:
   void adj(size_t nearplane, size_t farplane);
 };
 
+class Convolution {
+  // 3d thread block on GPU
+  dim3 BS3d;
+  // 3d thread grids on GPU for different kernels
+  dim3 GS3d0;
+
+public:
+  size_t ntheta;      // number of projections
+  size_t nz;          // object vertical size
+  size_t n;           // object horizontal size
+  size_t nscan;       // number of scan positions for 1 projection
+  size_t probe_shape; // probe size in 1 dimension
+
+  Convolution(size_t probe_shape, size_t nscan, size_t nz, size_t n, size_t ntheta);
+  ~Convolution();
+
+  void fwd(size_t nearplane, size_t obj, size_t scan);
+  void adj(size_t nearplane, size_t obj, size_t scan);
+};
+
 #endif
