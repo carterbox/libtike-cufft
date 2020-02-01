@@ -26,7 +26,7 @@ setup(
     zip_safe=False,
     entry_points={
         'tike.PtychoBackend': [
-            'cudafft = libtike.cufft.ptycho:PtychoCuFFT',
+            'cudafft = libtike.cufft:Ptycho',
         ],
         'tike.TomoBackend': [
             'cudafft = libtike.cufft.tomo:TomoCuFFT',

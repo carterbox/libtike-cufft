@@ -24,3 +24,21 @@ public:
   void adj(size_t f_, size_t g_, size_t scan_, size_t prb_, int flg);
   void free();
 };
+
+class Propagation {
+public:
+  %mutable;
+  Propagation(size_t nwaves, size_t detector_shape, size_t probe_shape);
+  ~Propagation();
+  void fwd(size_t nearplane, size_t farplane);
+  void adj(size_t nearplane, size_t farplane);
+};
+
+class Convolution {
+public:
+  %mutable;
+  Convolution(size_t probe_shape, size_t nscan, size_t nz, size_t n, size_t ntheta);
+  ~Convolution();
+  void fwd(size_t nearplane, size_t obj, size_t scan);
+  void adj(size_t nearplane, size_t obj, size_t scan);
+};

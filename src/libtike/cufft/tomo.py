@@ -1,13 +1,3 @@
-"""Module for tomography operators utilizing the cuFFT library.
-
-This module provides the forward and adjoint tomography operators as Python
-context managers. This means that instances should be instantiated using a
-with-block. The context managers construct was chosen because context managers
-are capable of gracefully handling interruptions (CTRL + C) by running their
-__exit__ method.
-
-"""
-
 import cupy as cp
 
 from libtike.cufft.radonusfft import radonusfft
