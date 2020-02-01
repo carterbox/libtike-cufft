@@ -24,3 +24,18 @@ public:
   void adj(size_t f_, size_t g_, size_t scan_, size_t prb_, int flg);
   void free();
 };
+
+class Propagation {
+public:
+  %immutable;
+  size_t nwaves;         // number waves to propagate
+  size_t detector_shape; // detector size in 1 dimension
+  size_t probe_shape;    // probe size in 1 dimension
+
+  %mutable;
+  Propagation(size_t nwaves, size_t detector_shape,
+                           size_t probe_shape);
+  ~Propagation();
+  void fwd(size_t nearplane, size_t farplane);
+  void adj(size_t nearplane, size_t farplane);
+};

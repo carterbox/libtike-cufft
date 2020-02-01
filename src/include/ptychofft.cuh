@@ -43,4 +43,29 @@ public:
   void free();
 };
 
+class Propagation {
+  cufftHandle plan2d; // 2D FFT plan
+  float2 *fft_buffer; // Buffer to store FFT output
+  float fft_norm; // FFT normalization constant
+
+  // 3d thread block on GPU
+  dim3 BS3d;
+  // 3d thread grids on GPU for different kernels
+  dim3 GS3d0;
+  dim3 GS3d1;
+  dim3 GS3d2;
+
+public:
+  size_t nwaves;         // number waves to propagate
+  size_t detector_shape; // detector size in 1 dimension
+  size_t probe_shape;    // probe size in 1 dimension
+
+  Propagation(size_t nwaves, size_t detector_shape,
+                           size_t probe_shape);
+  ~Propagation();
+
+  void fwd(size_t nearplane, size_t farplane);
+  void adj(size_t nearplane, size_t farplane);
+};
+
 #endif
