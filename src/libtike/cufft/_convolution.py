@@ -9,6 +9,9 @@ class Convolution(cpp.Convolution, tike.Convolution):
         cpp.Convolution.__init__(self, probe_shape, nscan, nz, n, ntheta)
         tike.Convolution.__init__(self, probe_shape, nscan, nz, n, ntheta, **kwargs)
 
+    def __exit__(self, type, value, traceback):
+        self.free()
+
     def fwd(self, psi, scan, **kwargs):
         nearplane = np.zeros(
             (self.ntheta, self.nscan, self.probe_shape, self.probe_shape),

@@ -125,9 +125,18 @@ Propagation::Propagation(size_t nwaves, size_t detector_shape,
 }
 
 Propagation::~Propagation() {
-  cufftDestroy(plan2d);
-  cudaFree(_f);
-  cudaFree(_g);
+  free();
+}
+
+void Propagation::free()
+{
+  if(!is_free)
+  {
+    cufftDestroy(plan2d);
+    cudaFree(_f);
+    cudaFree(_g);
+    is_free = true;
+  }
 }
 
 void Propagation::fwd(size_t nearplane, size_t farplane) {
@@ -193,9 +202,18 @@ Convolution::Convolution(size_t probe_shape, size_t nscan, size_t nz, size_t n,
 }
 
 Convolution::~Convolution() {
-  cudaFree(_scan);
-  cudaFree(_obj);
-  cudaFree(_nearplane);
+  free();
+}
+
+void Convolution::free()
+{
+  if(!is_free)
+  {
+    cudaFree(_scan);
+    cudaFree(_obj);
+    cudaFree(_nearplane);
+    is_free = true;
+  }
 }
 
 void Convolution::fwd(size_t nearplane, size_t obj, size_t scan) {

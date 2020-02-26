@@ -44,6 +44,7 @@ public:
 };
 
 class Propagation {
+  bool is_free = false;
   size_t bwaves;      // Number of waves to process simultaneously on GPU
   cufftHandle plan2d; // 2D FFT plan
   float fft_norm;     // FFT normalization constant
@@ -68,9 +69,11 @@ public:
 
   void fwd(size_t nearplane, size_t farplane);
   void adj(size_t nearplane, size_t farplane);
+  void free();
 };
 
 class Convolution {
+  bool is_free = false;
   dim3 BS3d;    // 3d thread block on GPU
   dim3 GS3d0;   // 3d thread grids on GPU
   size_t bscan; // number of scan positions to process simultaneously on GPU
@@ -98,6 +101,7 @@ public:
 
   void fwd(size_t nearplane, size_t obj, size_t scan);
   void adj(size_t nearplane, size_t obj, size_t scan);
+  void free();
 };
 
 #endif

@@ -32,6 +32,7 @@ public:
   ~Propagation();
   void fwd(size_t nearplane, size_t farplane);
   void adj(size_t nearplane, size_t farplane);
+  void free();
 };
 
 class Convolution {
@@ -41,4 +42,5 @@ public:
   ~Convolution();
   void fwd(size_t nearplane, size_t obj, size_t scan);
   void adj(size_t nearplane, size_t obj, size_t scan);
+  void free();
 };

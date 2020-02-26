@@ -10,6 +10,9 @@ class Propagation(cpp.Propagation, tike.Propagation):
         tike.Propagation.__init__(self, nwaves, detector_shape, probe_shape,
                                   **kwargs)
 
+    def __exit__(self, type, value, traceback):
+        self.free()
+
     def fwd(self, nearplane, **kwargs):
         shape = nearplane.shape[:-2]
         assert self.nwaves == np.prod(shape)
