@@ -6,8 +6,9 @@ from .propagation import Propagation
 
 
 class Ptycho(tike.operators.Ptycho):
-    def __init__(self, detector_shape, probe_shape, nscan, nz, n, **kwargs):
-        tike.Ptycho.__init__(self, detector_shape, probe_shape, nscan, nz, n,
+    def __init__(self, *args, **kwargs):
+        super(Ptycho, self).__init__(
+            *args,
             propagation=Propagation,
             diffraction=Convolution,
             **kwargs,

@@ -16,11 +16,12 @@ void patch(float2 *images, float2 *patches, const float2 *scan,
   const int tz = blockIdx.z;
   if (tx >= patch_shape * patch_shape || ty >= nscan || tz >= nimage) return;
 
-  float sx; // modf requires a place to save the integer part
-  float sy;
-  const float sxf = modff(scan[ty + tz * nscan].y, &sx);
-  const float syf = modff(scan[ty + tz * nscan].x, &sy);
-
+  const float sx = floor(scan[ty + tz * nscan].y);
+  const float sy = floor(scan[ty + tz * nscan].x);
+  const float sxf = scan[ty + tz * nscan].y - sx;
+  const float syf = scan[ty + tz * nscan].x - sy;
+  assert(sxf >= 0 && syf >= 0);
+  
   // skip scans where the probe position overlaps edges
   if (sx < 0 || nimagex <= sx + patch_shape || sy < 0 ||
       nimagey <= sy + patch_shape)
