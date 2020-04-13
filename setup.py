@@ -24,12 +24,16 @@ setup(
     package_dir={'': 'src'},
     packages=find_namespace_packages(where='src', include=['libtike.*']),
     zip_safe=False,
+    include_package_data=True,
     entry_points={
         'tike.PtychoBackend': [
-            'cudafft = libtike.cufft:Ptycho',
+            'cuda = libtike.cufft:Ptycho',
         ],
         'tike.TomoBackend': [
-            'cudafft = libtike.cufft.tomo:TomoCuFFT',
+            'cuda = libtike.cufft.tomo:TomoCuFFT',
+        ],
+        'tike.PtychoBackend': [
+            'cupy = libtike.cupy:Ptycho',
         ],
     },
     setup_requires=[

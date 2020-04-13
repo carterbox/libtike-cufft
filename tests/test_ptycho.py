@@ -8,7 +8,7 @@ import numpy as np
 import tike.operators
 import matplotlib.pyplot as plt
 
-import libtike.cufft
+import libtike.cupy
 
 
 def compare_result(result):
@@ -45,37 +45,39 @@ class TestConvolution(unittest.TestCase):
 
         self.nearplane = complex_random(ntheta, nscan, probe_shape,
                                         probe_shape).astype('complex64')
+        self.probe = complex_random(ntheta, 1, probe_shape,
+                                    probe_shape).astype('complex64')
         self.psi = complex_random(ntheta, nz, n).astype('complex64')
         self.scan = np.random.rand(ntheta, nscan, 2).astype('float32')
         self.scan *= np.array([nz - probe_shape, n - probe_shape])
 
     def test_fwd(self):
         """Check that the fwd operator is correct."""
-        call_args = (self.psi, self.scan)
+        call_args = (self.psi, self.scan, self.probe)
         constructor_args = (self.nearplane.shape[-1], self.scan.shape[1],
                             self.psi.shape[1], self.psi.shape[2],
                             self.psi.shape[0])
         print()
         ref = time_an_operator(tike.operators.Convolution, 'fwd',
                                constructor_args, call_args)
-        new = time_an_operator(libtike.cufft.Convolution, 'fwd',
+        new = time_an_operator(libtike.cupy.Convolution, 'fwd',
                                constructor_args, call_args)
-        compare_result(ref[2, 1])
-        compare_result(new[2, 1])
+        compare_result(ref[2, 1, 0, 0])
+        compare_result(new[2, 1, 0, 0])
         # plt.show()
         plt.close('all')
         np.testing.assert_allclose(ref, new, rtol=1e-6)
 
     def test_adj(self):
         """Check that the adj operator is correct."""
-        call_args = (self.nearplane, self.scan)
+        call_args = (self.nearplane, self.scan, self.probe)
         constructor_args = (self.nearplane.shape[-1], self.scan.shape[1],
                             self.psi.shape[1], self.psi.shape[2],
                             self.psi.shape[0])
         print()
         ref = time_an_operator(tike.operators.Convolution, 'adj',
                                constructor_args, call_args)
-        new = time_an_operator(libtike.cufft.Convolution, 'adj',
+        new = time_an_operator(libtike.cupy.Convolution, 'adj',
                                constructor_args, call_args)
         compare_result(ref[2])
         compare_result(new[2])
@@ -109,7 +111,7 @@ class TestPropagation(unittest.TestCase):
         print()
         ref = time_an_operator(tike.operators.Propagation, 'fwd',
                                constructor_args, call_args)
-        new = time_an_operator(libtike.cufft.Propagation, 'fwd',
+        new = time_an_operator(libtike.cupy.Propagation, 'fwd',
                                constructor_args, call_args)
         compare_result(ref[2, 1])
         compare_result(new[2, 1])
@@ -125,7 +127,7 @@ class TestPropagation(unittest.TestCase):
         print()
         ref = time_an_operator(tike.operators.Propagation, 'adj',
                                constructor_args, call_args)
-        new = time_an_operator(libtike.cufft.Propagation, 'adj',
+        new = time_an_operator(libtike.cupy.Propagation, 'adj',
                                constructor_args, call_args)
         compare_result(ref[2, 1])
         compare_result(new[2, 1])
