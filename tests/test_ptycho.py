@@ -40,30 +40,34 @@ class TestConvolution(unittest.TestCase):
     def setUp(self):
         """Load a dataset for reconstruction."""
         probe_shape = 61
-        nscan = 3119
+        detector_shape = 253
+        nscan = 779
         ntheta, nz, n = 3, 1021, 1031
+        fly, mode = 19, 4
 
-        self.nearplane = complex_random(ntheta, nscan, probe_shape,
+        self.nearplane = complex_random(ntheta, nscan // fly, fly, mode, probe_shape,
                                         probe_shape).astype('complex64')
-        self.probe = complex_random(ntheta, 1, probe_shape,
-                                    probe_shape).astype('complex64')
+        self.probe = complex_random(ntheta, nscan // fly, fly, mode, probe_shape,
+                                    probe_shape).astype('complex64') * 0 + 1
         self.psi = complex_random(ntheta, nz, n).astype('complex64')
         self.scan = np.random.rand(ntheta, nscan, 2).astype('float32')
         self.scan *= np.array([nz - probe_shape, n - probe_shape])
+        self.mode = mode
+        self.fly = fly
 
     def test_fwd(self):
         """Check that the fwd operator is correct."""
         call_args = (self.psi, self.scan, self.probe)
         constructor_args = (self.nearplane.shape[-1], self.scan.shape[1],
                             self.psi.shape[1], self.psi.shape[2],
-                            self.psi.shape[0])
+                            self.psi.shape[0], self.mode, self.fly)
         print()
         ref = time_an_operator(tike.operators.Convolution, 'fwd',
                                constructor_args, call_args)
         new = time_an_operator(libtike.cupy.Convolution, 'fwd',
                                constructor_args, call_args)
-        compare_result(ref[2, 1, 0, 0])
-        compare_result(new[2, 1, 0, 0])
+        compare_result(ref[0, 3, 0, 0])
+        compare_result(new[0, 3, 0, 0])
         # plt.show()
         plt.close('all')
         np.testing.assert_allclose(ref, new, rtol=1e-6)
@@ -73,14 +77,14 @@ class TestConvolution(unittest.TestCase):
         call_args = (self.nearplane, self.scan, self.probe)
         constructor_args = (self.nearplane.shape[-1], self.scan.shape[1],
                             self.psi.shape[1], self.psi.shape[2],
-                            self.psi.shape[0])
+                            self.psi.shape[0], self.mode, self.fly)
         print()
         ref = time_an_operator(tike.operators.Convolution, 'adj',
                                constructor_args, call_args)
         new = time_an_operator(libtike.cupy.Convolution, 'adj',
                                constructor_args, call_args)
-        compare_result(ref[2])
-        compare_result(new[2])
+        compare_result(ref[0])
+        compare_result(new[0])
         # plt.show()
         plt.close('all')
         np.testing.assert_allclose(ref, new, rtol=1e-6)
@@ -92,29 +96,31 @@ class TestPropagation(unittest.TestCase):
         """Load a dataset for reconstruction."""
         probe_shape = 61
         detector_shape = 253
-        nscan = 3119
+        nscan = 779
         ntheta, nz, n = 3, 1021, 1031
+        fly, mode = 19, 4
 
-        self.farplane = complex_random(ntheta, nscan, detector_shape,
+        self.farplane = complex_random(ntheta, nscan // fly, fly, mode, detector_shape,
                                        detector_shape).astype('complex64')
-        self.nearplane = complex_random(ntheta, nscan, probe_shape,
+        self.nearplane = complex_random(ntheta, nscan // fly, fly, mode, probe_shape,
                                         probe_shape).astype('complex64')
         self.psi = complex_random(ntheta, nz, n).astype('complex64')
         self.scan = np.random.rand(ntheta, nscan, 2).astype('float32')
         self.scan *= np.array([nz - probe_shape, n - probe_shape])
+        self.mode = mode
 
     def test_fwd(self):
         """Check that the fwd operator is correct."""
         call_args = (self.nearplane, )
-        constructor_args = (self.scan.shape[0] * self.scan.shape[1],
+        constructor_args = (self.scan.shape[0] * self.scan.shape[1] * self.mode,
                             self.farplane.shape[-1], self.nearplane.shape[-1])
         print()
         ref = time_an_operator(tike.operators.Propagation, 'fwd',
                                constructor_args, call_args)
         new = time_an_operator(libtike.cupy.Propagation, 'fwd',
                                constructor_args, call_args)
-        compare_result(ref[2, 1])
-        compare_result(new[2, 1])
+        compare_result(ref[2, 1, 0, 0])
+        compare_result(new[2, 1, 0, 0])
         # plt.show()
         plt.close('all')
         np.testing.assert_allclose(ref, new, rtol=1e-6)
@@ -122,15 +128,15 @@ class TestPropagation(unittest.TestCase):
     def test_adj(self):
         """Check that the adj operator is correct."""
         call_args = (self.farplane, )
-        constructor_args = (self.scan.shape[0] * self.scan.shape[1],
+        constructor_args = (self.scan.shape[0] * self.scan.shape[1] * self.mode,
                             self.farplane.shape[-1], self.nearplane.shape[-1])
         print()
         ref = time_an_operator(tike.operators.Propagation, 'adj',
                                constructor_args, call_args)
         new = time_an_operator(libtike.cupy.Propagation, 'adj',
                                constructor_args, call_args)
-        compare_result(ref[2, 1])
-        compare_result(new[2, 1])
+        compare_result(ref[2, 1, 0, 0])
+        compare_result(new[2, 1, 0, 0])
         # plt.show()
         plt.close('all')
         np.testing.assert_allclose(ref, new, rtol=1e-6)
