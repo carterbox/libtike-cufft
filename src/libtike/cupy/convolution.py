@@ -58,10 +58,11 @@ class Convolution(tike.operators.Convolution):
         )
 
         for view in range(self.ntheta):
-            self.obj.set(psi[view])
+            self.obj.set(psi[view].astype('complex64'))
             for batch in range(0, self.nscan, self.bscan):
                 stride = min(self.bscan, self.nscan - batch)
-                self.scan[:stride].set(scan[view, batch:batch + stride])
+                self.scan[:stride].set(scan[view, batch:batch +
+                                            stride].astype('float32'))
                 _patch_kernel(self.GS, self.BS,
                               (self.obj, self.near, self.scan, 1, self.nz,
                                self.n, self.probe_shape, stride, True))
@@ -86,8 +87,10 @@ class Convolution(tike.operators.Convolution):
             self.obj[:] = 0
             for batch in range(0, self.nscan, self.bscan):
                 stride = min(self.bscan, self.nscan - batch)
-                self.scan[:stride].set(scan[view, batch:batch + stride])
-                self.near[:stride].set(nearplane[view, batch:batch + stride])
+                self.scan[:stride].set(scan[view, batch:batch +
+                                            stride].astype('float32'))
+                self.near[:stride].set(nearplane[view, batch:batch +
+                                                 stride].astype('complex64'))
                 _patch_kernel(self.GS, self.BS,
                               (self.obj, self.near, self.scan, 1, self.nz,
                                self.n, self.probe_shape, stride, False))
@@ -104,10 +107,11 @@ class Convolution(tike.operators.Convolution):
         )
 
         for view in range(self.ntheta):
-            self.obj.set(psi[view])
+            self.obj.set(psi[view].astype('complex64'))
             for batch in range(0, self.nscan, self.bscan):
                 stride = min(self.bscan, self.nscan - batch)
-                self.scan[:stride].set(scan[view, batch:batch + stride])
+                self.scan[:stride].set(scan[view, batch:batch +
+                                            stride].astype('float32'))
                 _patch_kernel(self.GS, self.BS,
                               (self.obj, self.near, self.scan, 1, self.nz,
                                self.n, self.probe_shape, stride, True))

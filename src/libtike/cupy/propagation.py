@@ -6,7 +6,6 @@ import tike.operators
 
 class Propagation(tike.operators.Propagation):
     """A Fourier-based free-space propagation using CuPy."""
-    
     def __init__(self, nwaves, detector_shape, probe_shape, **kwargs):
         super(Propagation, self).__init__(nwaves, detector_shape, probe_shape,
                                           **kwargs)
@@ -33,8 +32,10 @@ class Propagation(tike.operators.Propagation):
         with self.plan:
             for batch in range(0, self.nwaves, self.bwaves):
                 stride = min(self.bwaves, self.nwaves - batch)
-                self.far[:stride] = 0  # TODO: replace with kernel
-                self.near[:stride].set(nearplane[batch:batch + stride])
+                # TODO: replace with kernel
+                self.far[:stride] = cp.complex64(0)
+                self.near[:stride].set(nearplane[batch:batch +
+                                                 stride].astype('complex64'))
                 self.far[:stride, pad:end, pad:end] = self.near[:stride]
                 self.far = cp.fft.fftn(
                     self.far,
@@ -57,7 +58,8 @@ class Propagation(tike.operators.Propagation):
         with self.plan:
             for batch in range(0, self.nwaves, self.bwaves):
                 stride = min(self.bwaves, self.nwaves - batch)
-                self.far[:stride].set(farplane[batch:batch + stride])
+                self.far[:stride].set(farplane[batch:batch +
+                                               stride].astype('complex64'))
                 self.far = cp.fft.ifftn(
                     self.far,
                     norm='ortho',
