@@ -1,4 +1,5 @@
 import cupy as cp
+from cupyx.scipy.fft import fftn, ifftn
 from cupyx.scipy.fftpack import get_fft_plan
 import numpy as np
 import tike.operators
@@ -45,10 +46,11 @@ class Propagation(tike.operators.Propagation):
                 self.near[:stride].set(nearplane[batch:batch +
                                                  stride].astype('complex64'))
                 self.far[:stride, pad:end, pad:end] = self.near[:stride]
-                self.far = cp.fft.fftn(
+                self.far = fftn(
                     self.far,
                     norm='ortho',
                     axes=(-2, -1),
+                    overwrite_x=True,
                 )
                 farplane[batch:batch + stride] = self.far[:stride].get()
         return farplane.reshape(*shape[:-2], *farplane.shape[-2:])
@@ -68,10 +70,11 @@ class Propagation(tike.operators.Propagation):
                 stride = min(self.bwaves, self.nwaves - batch)
                 self.far[:stride].set(farplane[batch:batch +
                                                stride].astype('complex64'))
-                self.far = cp.fft.ifftn(
+                self.far = ifftn(
                     self.far,
                     norm='ortho',
                     axes=(-2, -1),
+                    overwrite_x=True,
                 )
                 nearplane[batch:batch + stride] \
                     = self.far[:stride, pad:end, pad:end].get()
