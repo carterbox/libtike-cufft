@@ -6,19 +6,24 @@ import tike.operators
 
 class Propagation(tike.operators.Propagation):
     """A Fourier-based free-space propagation using CuPy."""
-    def __init__(self, nwaves, detector_shape, probe_shape, **kwargs):
-        super(Propagation, self).__init__(nwaves, detector_shape, probe_shape,
-                                          **kwargs)
-        self.bwaves = min(nwaves, 512)
+
+    def __enter__(self):
+        self.bwaves = min(self.nwaves, 512)
         self.far = cp.empty(
-            (self.bwaves, detector_shape, detector_shape),
+            (self.bwaves, self.detector_shape, self.detector_shape),
             dtype='complex64',
         )
         self.near = cp.empty(
-            (self.bwaves, probe_shape, probe_shape),
+            (self.bwaves, self.probe_shape, self.probe_shape),
             dtype='complex64',
         )
         self.plan = get_fft_plan(self.far, axes=(-2, -1))
+        return self
+
+    def __exit__(self, type, value, traceback):
+        del self.far
+        del self.near
+        del self.plan
 
     def fwd(self, nearplane, **kwargs):
         shape = nearplane.shape

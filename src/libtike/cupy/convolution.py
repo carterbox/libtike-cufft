@@ -10,18 +10,21 @@ _patch_kernel = cp.RawKernel(_cu_source, "patch")
 
 
 class Convolution(tike.operators.Convolution):
-    def __init__(self, probe_shape, nscan, nz, n, ntheta, nmode=1, fly=1,
-                 **kwargs):  # yapf: disable
-        super(Convolution, self).__init__(probe_shape, nscan, nz, n, ntheta,
-                                          nmode, fly, **kwargs)
 
-        self.bscan = min(nscan, 256)
+    def __enter__(self): 
+        self.bscan = min(self.nscan, 256)
         self.scan = cp.empty((self.bscan, 2), dtype='float32')
-        self.obj = cp.empty((nz, n), dtype='complex64')
-        self.near = cp.empty((self.bscan, probe_shape, probe_shape),
+        self.obj = cp.empty((self.nz, self.n), dtype='complex64')
+        self.near = cp.empty((self.bscan, self.probe_shape, self.probe_shape),
                              dtype='complex64')
         self.BS = (512, 1, 1)
-        self.GS = (ceil(probe_shape * probe_shape / self.BS[0]), self.bscan, 1)
+        self.GS = (ceil(self.probe_shape**2 / self.BS[0]), self.bscan, 1)
+        return self
+      
+    def __exit__(self, type, value, traceback):
+        del self.scan
+        del self.obj
+        del self.near
 
     def reshape_psi(self, x):
         """Return x reshaped like an object."""
