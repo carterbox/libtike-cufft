@@ -8,7 +8,8 @@ class Propagation(tike.operators.Propagation):
     """A Fourier-based free-space propagation using CuPy."""
 
     def __enter__(self):
-        self.bwaves = min(self.nwaves, 512)
+        # TODO: Estimate best buffer size
+        self.bwaves = min(self.nwaves, 1024)
         self.far = cp.empty(
             (self.bwaves, self.detector_shape, self.detector_shape),
             dtype='complex64',
