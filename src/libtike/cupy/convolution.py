@@ -10,10 +10,12 @@ _patch_kernel = cp.RawKernel(_cu_source, "patch")
 
 
 class Convolution(tike.operators.Convolution):
-
     def __enter__(self):
-        # TODO: Estimate best buffer size       
-        self.bscan = min(self.nscan, 1024)
+        limit = 2 * 1024**3  # bytes
+        self.bscan = min(
+            self.nscan,
+            (limit - self.nz * self.n * 8) // (8 + self.probe_shape**2 * 8),
+        )
         self.scan = cp.empty((self.bscan, 2), dtype='float32')
         self.obj = cp.empty((self.nz, self.n), dtype='complex64')
         self.near = cp.empty((self.bscan, self.probe_shape, self.probe_shape),
@@ -21,7 +23,7 @@ class Convolution(tike.operators.Convolution):
         self.BS = (512, 1, 1)
         self.GS = (ceil(self.probe_shape**2 / self.BS[0]), self.bscan, 1)
         return self
-      
+
     def __exit__(self, type, value, traceback):
         del self.scan
         del self.obj
