@@ -5,7 +5,6 @@ removes the need for interface layers like pybind11 or SWIG because kernel
 launches and memory management may by accessed from Python.
 """
 
-
 from pkg_resources import get_distribution, DistributionNotFound
 
 from .convolution import *
