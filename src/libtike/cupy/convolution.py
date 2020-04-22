@@ -12,8 +12,14 @@ _patch_kernel = cp.RawKernel(_cu_source, "patch")
 
 class Convolution(Operator, tike.operators.Convolution):
     def __enter__(self):
-        self.blocks = (self.probe_shape**2, 1, 1)
-        self.grids = (1, self.nscan, self.ntheta)
+        max_thread = min(self.probe_shape**2,
+                         _patch_kernel.attributes['max_threads_per_block'])
+        self.blocks = (max_thread, )
+        self.grids = (
+            -(-self.probe_shape**2 // max_thread),  # ceil division
+            self.nscan,
+            self.ntheta,
+        )
         return self
 
     def __exit__(self, type, value, traceback):
