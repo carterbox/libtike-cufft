@@ -17,6 +17,7 @@ class Propagation(Operator, tike.operators.Propagation):
         return self
 
     def __exit__(self, type, value, traceback):
+        del self.plan
         pass
 
     def fwd(self, nearplane, **kwargs):
