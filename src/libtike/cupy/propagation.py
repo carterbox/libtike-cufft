@@ -24,7 +24,7 @@ class Propagation(Operator, tike.operators.Propagation):
         shape = nearplane.shape
         pad = (self.detector_shape - self.probe_shape) // 2
         end = self.probe_shape + pad
-        farplane = cp.empty(
+        farplane = cp.zeros(
             (self.nwaves, self.detector_shape, self.detector_shape),
             dtype='complex64')
         nearplane = nearplane.reshape(self.nwaves, self.probe_shape,
@@ -44,10 +44,6 @@ class Propagation(Operator, tike.operators.Propagation):
         shape = farplane.shape
         pad = (self.detector_shape - self.probe_shape) // 2
         end = self.probe_shape + pad
-        nearplane = cp.empty(
-            (self.nwaves, self.probe_shape, self.probe_shape),
-            dtype='complex64',
-        )
         farplane = farplane.reshape(self.nwaves, self.detector_shape,
                                     self.detector_shape)
         with self.plan:
