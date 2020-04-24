@@ -56,11 +56,6 @@ class Convolution(Operator, tike.operators.Convolution):
         if not overwrite:
             nearplane = nearplane.copy()
         nearplane[..., self.pad:self.end, self.pad:self.end] *= cp.conj(probe)
-        nearplane = cp.sum(
-            nearplane.reshape(self.ntheta, self.nscan, -1, self.detector_shape,
-                              self.detector_shape),
-            axis=2,
-        )
         obj = cp.zeros((self.ntheta, self.nz, self.n), dtype='complex64')
         _patch_kernel(
             self.grids,
@@ -90,8 +85,10 @@ class Convolution(Operator, tike.operators.Convolution):
     def _check_shape_probe(self, x):
         """Check that the probe is correctly shaped."""
         assert type(x) is cp.ndarray, type(x)
+        # unique probe for each position
         shape1 = (self.ntheta, self.nscan // self.fly, self.fly, 1,
                   self.probe_shape, self.probe_shape)
+        # one probe for all positions
         shape2 = (self.ntheta, 1, 1, 1, self.probe_shape, self.probe_shape)
         if __debug__ and x.shape != shape2 and x.shape != shape1:
             raise ValueError(
