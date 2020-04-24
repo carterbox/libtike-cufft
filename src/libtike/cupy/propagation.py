@@ -20,17 +20,12 @@ class Propagation(Operator, tike.operators.Propagation):
         del self.plan
         pass
 
-    def fwd(self, nearplane, **kwargs):
-        assert type(nearplane) is cp.ndarray, type(nearplane)
-        shape = nearplane.shape
-        pad = (self.detector_shape - self.probe_shape) // 2
-        end = self.probe_shape + pad
-        farplane = cp.zeros(
-            (self.nwaves, self.detector_shape, self.detector_shape),
-            dtype='complex64')
-        nearplane = nearplane.reshape(self.nwaves, self.probe_shape,
-                                      self.probe_shape)
-        farplane[..., pad:end, pad:end] = nearplane
+    def fwd(self, nearplane, overwrite=False, **kwargs):
+        self._check_shape(nearplane)
+        if overwrite:
+            farplane = nearplane
+        else:
+            farplane = cp.copy(nearplane)
         with self.plan:
             farplane = fftn(
                 farplane,
@@ -38,21 +33,26 @@ class Propagation(Operator, tike.operators.Propagation):
                 axes=(-2, -1),
                 overwrite_x=True,
             )
-        return farplane.reshape(*shape[:-2], *farplane.shape[-2:])
+        return farplane
 
-    def adj(self, farplane, **kwargs):
-        assert type(farplane) is cp.ndarray, type(farplane)
-        shape = farplane.shape
-        pad = (self.detector_shape - self.probe_shape) // 2
-        end = self.probe_shape + pad
-        farplane = farplane.reshape(self.nwaves, self.detector_shape,
-                                    self.detector_shape)
+    def adj(self, farplane, overwrite=False, **kwargs):
+        self._check_shape(farplane)
+        if overwrite:
+            nearplane = farplane
+        else:
+            nearplane = cp.copy(farplane)
         with self.plan:
-            farplane = ifftn(
-                farplane,
+            nearplane = ifftn(
+                nearplane,
                 norm='ortho',
                 axes=(-2, -1),
                 overwrite_x=True,
             )
-        nearplane = farplane[..., pad:end, pad:end]
-        return nearplane.reshape(*shape[:-2], *nearplane.shape[-2:])
+        return nearplane
+
+    def _check_shape(self, x):
+        assert type(x) is cp.ndarray, type(x)
+        shape = (self.nwaves, self.detector_shape, self.detector_shape)
+        if (__debug__ and x.shape[-2:] != shape[-2:]
+                and cp.prod(x.shape[:-2]) != self.nwaves):
+            raise ValueError(f'waves must have shape {shape} not {x.shape}.')

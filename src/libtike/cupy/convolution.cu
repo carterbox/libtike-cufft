@@ -1,26 +1,41 @@
-// Extract patches from an image at scan locations
-// OR add patches to an image at scan locations
-//
-// This function extracts patches using linear interpolation at each of the scan
-// points.
-// Assuming square patches, but rectangular image.
+// Extract padded patches from an image at scan locations OR add padded patches
+// to an image at scan locations.
+
+// The forward kernel extracts patches using linear interpolation at each of
+// the scan points and includes optional padding. Assumes square patches, but
+// rectangular image. The reverse kernel adds the patches to the images.
+// Padding areas are untouched and retain whatever values they had before the
+// kernel was launched.
+
+// The kernel should be launched with the following config:
+// block shape = (min(max_thread, patch_size**2), 0, 0)
+// grid shape = (-(-patch_size**2 // max_thread), nscan, nimage)
+
+// images has shape (nimage, nimagey, nimagex)
+// patches has shape (nscan, patch_shape, patch_shape)
 // nscan is the number of positions per images
 // scan has shape (nimage, nscan)
-// images has shape (nimage, nimagey, nimagex)
 extern "C" __global__
 void patch(float2 *images, float2 *patches, const float2 *scan,
-           int nimage, int nimagey, int nimagex, int patch_shape,
-           int nscan, bool forward) {
-  const int tx = threadIdx.x + blockDim.x * (blockIdx.x);
-  const int ty = blockIdx.y;
-  const int tz = blockIdx.z;
-  if (tx >= patch_shape * patch_shape || ty >= nscan || tz >= nimage) return;
+           int nimage, int nimagey, int nimagex,
+           int nscan, int patch_shape, int padded_shape,
+           bool forward) {
+  const int tp = threadIdx.x + blockDim.x * (blockIdx.x);  // thread patch
+  const int ts = blockIdx.y;  // thread scan
+  const int ti = blockIdx.z;  // thread image
+  if (tp >= patch_shape * patch_shape || ts >= nscan || ti >= nimage) return;
 
   // patch index (pi)
-  const int pi = tx + patch_shape * patch_shape * (ty + nscan * (tz));
+  const int px = tp % patch_shape;
+  const int py = tp / patch_shape;
+  const int pad = (padded_shape - patch_shape) / 2;
+  const int pi = (
+    + pad + px + padded_shape * (pad + py)
+    + padded_shape * padded_shape * (ts + nscan * ti)
+  );
 
-  const float sx = floor(scan[ty + tz * nscan].y);
-  const float sy = floor(scan[ty + tz * nscan].x);
+  const float sx = floor(scan[ts + ti * nscan].y);
+  const float sy = floor(scan[ts + ti * nscan].x);
 
   if (sx < 0 || nimagex <= sx + patch_shape ||
       sy < 0 || nimagey <= sy + patch_shape){
@@ -34,13 +49,10 @@ void patch(float2 *images, float2 *patches, const float2 *scan,
   }
 
   // image index (ii)
-  const int ii = (
-    sx + (tx % patch_shape)
-    + nimagex * ((sy + tx / patch_shape) + nimagey * tz)
-  );
+  const int ii = sx + px + nimagex * (sy + py + nimagey * ti);
 
-  const float sxf = scan[ty + tz * nscan].y - sx;
-  const float syf = scan[ty + tz * nscan].x - sy;
+  const float sxf = scan[ts + ti * nscan].y - sx;
+  const float syf = scan[ts + ti * nscan].x - sy;
   assert(1.0f >= sxf && sxf >= 0.0f && 1.0f >= syf && syf >= 0.0f);
 
   // Linear interpolation
