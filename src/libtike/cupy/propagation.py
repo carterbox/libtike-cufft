@@ -6,6 +6,9 @@ import tike.operators
 from .operator import Operator
 
 
+# TODO: Check that in-place FFTs for view of contiguous arrays are fixed
+# for cupy>=7.4. See cupy#3079
+
 class Propagation(Operator, tike.operators.Propagation):
     """A Fourier-based free-space propagation using CuPy."""
     def __enter__(self):
@@ -22,33 +25,31 @@ class Propagation(Operator, tike.operators.Propagation):
 
     def fwd(self, nearplane, overwrite=False, **kwargs):
         self._check_shape(nearplane)
-        if overwrite:
-            farplane = nearplane
-        else:
-            farplane = cp.copy(nearplane)
+        if not overwrite:
+            nearplane = cp.copy(nearplane)
+        shape = nearplane.shape
         with self.plan:
-            farplane = fftn(
-                farplane,
+            return fftn(
+                nearplane.reshape(self.nwaves, self.detector_shape,
+                                  self.detector_shape),
                 norm='ortho',
                 axes=(-2, -1),
                 overwrite_x=True,
-            )
-        return farplane
+            ).reshape(shape)
 
     def adj(self, farplane, overwrite=False, **kwargs):
         self._check_shape(farplane)
-        if overwrite:
-            nearplane = farplane
-        else:
-            nearplane = cp.copy(farplane)
+        if not overwrite:
+            farplane = cp.copy(farplane)
+        shape = farplane.shape
         with self.plan:
-            nearplane = ifftn(
-                nearplane,
+            return ifftn(
+                farplane.reshape(self.nwaves, self.detector_shape,
+                                 self.detector_shape),
                 norm='ortho',
                 axes=(-2, -1),
                 overwrite_x=True,
-            )
-        return nearplane
+            ).reshape(shape)
 
     def _check_shape(self, x):
         assert type(x) is cp.ndarray, type(x)
