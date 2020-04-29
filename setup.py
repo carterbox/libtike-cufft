@@ -24,7 +24,6 @@ setup(
     install_requires=[
         'cupy',
         'importlib_resources',
-        'numpy',
         'tike',
     ],
 )
