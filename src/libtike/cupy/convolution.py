@@ -49,14 +49,15 @@ class Convolution(Operator, tike.operators.Convolution):
         patches[..., self.pad:self.end, self.pad:self.end] *= probe
         return patches
 
-    def adj(self, nearplane, scan, probe, overwrite=False):
+    def adj(self, nearplane, scan, probe, obj=None, overwrite=False):
         """Combine probe shaped patches into a psi shaped grid by addition."""
         self._check_shape_nearplane(nearplane)
         self._check_shape_probe(probe)
         if not overwrite:
             nearplane = nearplane.copy()
         nearplane[..., self.pad:self.end, self.pad:self.end] *= cp.conj(probe)
-        obj = cp.zeros((self.ntheta, self.nz, self.n), dtype='complex64')
+        if obj is None:
+            obj = cp.zeros((self.ntheta, self.nz, self.n), dtype='complex64')
         _patch_kernel(
             self.grids,
             self.blocks,
