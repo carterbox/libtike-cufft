@@ -10,3 +10,13 @@ Install the package in the normal way
 ```bash
 pip install .
 ```
+
+## Using with Tike
+
+To enable these operators, set the following environment variables:
+
+```bash
+export TIKE_PTYCHO_BACKEND=cupy
+```
+
+These operators replace the default ones in Tike using Python entry points.
